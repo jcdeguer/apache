@@ -17,6 +17,7 @@ class apache::repos {
   $available_mod_oracle_instant_client  = $::apache::available_mod_oracle_instant_client
   $available_mod_opcache                = $::apache::available_mod_opcache
   $available_mod_oci8                   = $::apache::available_mod_oci8
+  $proxy_url                            = $::apache::proxy_url
 
 # El siguiente bloque de codigo, valida si hemos habilitado la instalacion del modulo de PHP y el de Oracle Instant Client
   if $available_mod_php { # Chequea de instalar PHP
@@ -28,12 +29,14 @@ class apache::repos {
             descr           => $repo_php_description,
             baseurl         => $repo_php_baseurl,
             gpgcheck        => 0,
+            proxy           => $proxy_url,
           }
           yumrepo { $repo_oic_file_name: # Configura el repositorio para Oracle Instant Client
             enabled         => $repo_oic_status,
             descr           => $repo_oic_description,
             baseurl         => $repo_oic_baseurl,
             gpgcheck        => 0,
+            proxy           => $proxy_url,
           }
         }
       }
@@ -46,6 +49,7 @@ class apache::repos {
           descr           => $repo_php_description,
           baseurl         => $repo_php_baseurl,
           gpgcheck        => 0,
+          proxy           => $proxy_url,
         }
       }
     }
@@ -59,6 +63,7 @@ class apache::repos {
           descr           => $repo_oic_description,
           baseurl         => $repo_oic_baseurl,
           gpgcheck        => 0,
+          proxy           => $proxy_url,
         }
       }
     }
