@@ -1,0 +1,9 @@
+<%- if @version_oic -%>
+[Oracle-InstantClient_<%= @version_oic %>_x86_64]
+baseurl = ####### NEED A VALID REPO URL, USE FOREMAN ###### 
+name = Oracle Instant Client <%= @version_oic %> x86_64
+<%- if @oic_repo_status -%>enabled = <%= @oic_repo_status %>  <%- else -%>enabled = 0 <%- end -%>
+
+gpgcheck = 0
+proxy = <%= proxy_url %>
+<%- end -%>
