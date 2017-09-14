@@ -1,0 +1,9 @@
+<%- if @version_php -%>
+[REMI_PHP_el7_<%= @version_php %>_x86_64]
+baseurl = http://rpms.famillecollet.com/enterprise/7/php<%= @version_php %>/x86_64/
+name = PHP el7 <%= @version_php %> x86_64
+<%- if @php_repo_status -%>enabled = <%= @php_repo_status %>  <%- else -%>enabled = 0 <%- end -%>
+
+gpgcheck = 0
+proxy = <%= proxy_url %>
+<%- end -%>
