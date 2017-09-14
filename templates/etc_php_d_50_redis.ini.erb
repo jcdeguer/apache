@@ -1,0 +1,38 @@
+; Enable redis extension module
+
+
+<% if @php_extension_redis -%>
+extension = <%= @php_extension_redis %>
+<% else -%>
+<% end -%>
+
+; phpredis can be used to store PHP sessions.
+; To do this, uncomment and configure below
+
+; RPM note : save_handler and save_path are defined
+; for mod_php, in /etc/httpd/conf.d/php.conf
+; for php-fpm, in /etc/php-fpm.d/*conf
+
+
+<% if @php_session_save_handler_redis -%>
+session.save_handler = <%= @php_session_save_handler_redis %>
+<% else -%>
+;session.save_handler = redis
+<% end -%>
+
+<% if @php_session_save_path -%>
+session.save_path = <%= @php_session_save_path %>
+<% else -%>
+;session.save_path = "tcp://host1:6379?weight=1, tcp://host2:6379?weight=2&timeout=2.5, tcp://host3:6379?weight=2"
+<% end -%>
+
+; Configuration
+;redis.arrays.names = ''
+;redis.arrays.hosts = ''
+;redis.arrays.previous = ''
+;redis.arrays.functions = ''
+;redis.arrays.index = ''
+;redis.arrays.autorehash = ''
+;redis.clusters.seeds = ''
+;redis.clusters.timeout = ''
+;redis.clusters.read_timeout = ''
