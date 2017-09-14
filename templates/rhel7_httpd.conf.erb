@@ -1,0 +1,578 @@
+#
+# This is the main Apache HTTP server configuration file.  It contains the
+# configuration directives that give the server its instructions.
+# See <URL:http://httpd.apache.org/docs/2.4/> for detailed information.
+# In particular, see
+# <URL:http://httpd.apache.org/docs/2.4/mod/directives.html>
+# for a discussion of each configuration directive.
+#
+# Do NOT simply read the instructions in here without understanding
+# what they do.  They're here only as hints or reminders.  If you are unsure
+# consult the online docs. You have been warned.
+#
+# Configuration and logfile names: If the filenames you specify for many
+# of the server's control files begin with "/" (or "drive:/" for Win32), the
+# server will use that explicit path.  If the filenames do *not* begin
+# with "/", the value of ServerRoot is prepended -- so 'log/access_log'
+# with ServerRoot set to '/www' will be interpreted by the
+# server as '/www/log/access_log', where as '/log/access_log' will be
+# interpreted as '/log/access_log'.
+
+#
+# ServerRoot: The top of the directory tree under which the server's
+# configuration, error, and log files are kept.
+#
+# Do not add a slash at the end of the directory path.  If you point
+# ServerRoot at a non-local disk, be sure to specify a local disk on the
+# Mutex directive, if file-based mutexes are used.  If you wish to share the
+# same ServerRoot for multiple httpd daemons, you will need to change at
+# least PidFile.
+#
+
+<% if @server_root -%>
+ServerRoot <%= @server_root %>
+<% else -%>
+ServerRoot "/etc/httpd"
+<% end -%>
+
+#
+# Listen: Allows you to bind Apache to specific IP addresses and/or
+# ports, instead of the default. See also the <VirtualHost>
+# directive.
+#
+# Change this to Listen on specific IP addresses as shown below to
+# prevent Apache from glomming onto all bound IP addresses.
+#
+#Listen 12.34.56.78:80
+
+<% if @listen_port -%>
+Listen <%= @listen_port %>
+<% else -%>
+Listen 80
+<% end -%>
+
+#
+# Dynamic Shared Object (DSO) Support
+#
+# To be able to use the functionality of a module which was built as a DSO you
+# have to place corresponding `LoadModule' lines at this location so the
+# directives contained in it are actually available _before_ they are used.
+# Statically compiled modules (those listed by `httpd -l') do not need
+# to be loaded here.
+#
+# Example:
+# LoadModule foo_module modules/mod_foo.so
+#
+
+# Include "<%= @include_dir %>"
+# Include "<%= @include_ports_file %>"
+
+<% if @include_conf_modules_dir -%>
+Include <%= @include_conf_modules_dir %>/*.conf
+<% else -%>
+Include conf.modules.d/*.conf
+<% end -%>
+
+#
+# If you wish httpd to run as a different user or group, you must run
+# httpd as root initially and it will switch.
+#
+# User/Group: The name (or #number) of the user/group to run httpd as.
+# It is usually good practice to create a dedicated user and group for
+# running httpd, as with most system services.
+#
+
+<% if @user -%>
+User <%= @user %>
+<% else -%>
+User apache
+<% end -%>
+
+<% if @group -%>
+Group <%= @group %>
+<% else -%>
+Group apache
+<% end -%>
+
+# 'Main' server configuration
+#
+# The directives in this section set up the values used by the 'main'
+# server, which responds to any requests that aren't handled by a
+# <VirtualHost> definition.  These values also provide defaults for
+# any <VirtualHost> containers you may define later in the file.
+#
+# All of these directives may appear inside <VirtualHost> containers,
+# in which case these default settings will be overridden for the
+# virtual host being defined.
+#
+
+#
+# ServerAdmin: Your address, where problems with the server should be
+# e-mailed.  This address appears on some server-generated pages, such
+# as error documents.  e.g. admin@your-domain.com
+#
+
+<% if @server_admin -%>
+ServerAdmin <%= @server_admin %>
+<% else -%>
+ServerAdmin root@localhost
+<% end -%>
+
+#
+# ServerName gives the name and port that the server uses to identify itself.
+# This can often be determined automatically, but we recommend you specify
+# it explicitly to prevent problems during startup.
+#
+# If your host doesn't have a registered DNS name, enter its IP address here.
+#
+#ServerName www.example.com:80
+
+#
+# Deny access to the entirety of your server's filesystem. You must
+# explicitly permit access to web content directories in other
+# <Directory> blocks below.
+#
+
+<% if @directory_root -%>
+<Directory <%= @directory_root %>>
+ <% if @root_allow_override -%>
+        AllowOverride <%= @root_allow_override %>
+ <% else -%>
+        AllowOverride none
+ <% end -%>
+ <% if @root_require_all_denied -%>
+        Require <%= @root_require_all_denied %>
+ <% else -%>
+        Require all denied
+ <% end -%>
+</Directory>
+<% else -%>
+<Directory />
+        AllowOverride none
+        Require all denied
+</Directory>
+<% end -%>
+
+#
+# Note that from this point forward you must specifically allow
+# particular features to be enabled - so if something's not working as
+# you might expect, make sure that you have specifically enabled it
+# below.
+#
+
+#
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+
+<% if @document_root -%>
+DocumentRoot "<%= @document_root %>"
+<% else -%>
+DocumentRoot "/var/www/html"
+<% end -%>
+
+#
+# Relax access to content within /var/www.
+#
+<% if @directory_content -%>
+<Directory "<%= @directory_content %>">
+ <% if @content_allow_override -%>
+        AllowOverride <%= @content_allow_override %>
+ <% else -%>
+        AllowOverride None
+ <% end -%>
+ <% if @content_all_granted -%>
+        Require <%= @content_all_granted %>
+ <% else -%>
+        Require all granted
+ <% end -%>
+</Directory>
+<% else -%>
+<Directory "/var/www">
+     AllowOverride None
+     Require all granted
+</Directory>
+<% end -%>
+
+<% if @document_root -%>
+<Directory "<%= @document_root %>">
+ <% if @document_root_indexes -%>
+        Options  <%= @document_root_indexes %>
+ <% else -%>
+        Options Indexes FollowSymLinks
+ <% end -%>
+ <% if @document_root_allow_override -%>
+        AllowOverride <%= @document_root_allow_override %>
+ <% else -%>
+        AllowOverride None
+ <% end -%>
+ <% if @document_root_all_granted -%>
+        Require <%= @document_root_all_granted %>
+ <% else -%>
+        Require all granted
+ <% end -%>
+</Directory>
+<% else -%>
+# Further relax access to the default document root:
+<Directory "/var/www/html">
+    #
+    # Possible values for the Options directive are "None", "All",
+    # or any combination of:
+    #   Indexes Includes FollowSymLinks SymLinksifOwnerMatch ExecCGI MultiViews
+    #
+    # Note that "MultiViews" must be named *explicitly* --- "Options All"
+    # doesn't give it to you.
+    #
+    # The Options directive is both complicated and important.  Please see
+    # http://httpd.apache.org/docs/2.4/mod/core.html#options
+    # for more information.
+    #
+    Options Indexes FollowSymLinks
+
+    #
+    # AllowOverride controls what directives may be placed in .htaccess files.
+    # It can be "All", "None", or any combination of the keywords:
+    #   Options FileInfo AuthConfig Limit
+    #
+    AllowOverride None
+
+    #
+    # Controls who can get stuff from this server.
+    #
+    Require all granted
+</Directory>
+<% end -%>
+
+#
+# DirectoryIndex: sets the file that Apache will serve if a directory
+# is requested.
+#
+<% if @httpd_dir_module_enable -%>
+<IfModule dir_module>
+ <% if @httpd_dir_module_dir_index -%>
+        DirectoryIndex <%= @httpd_dir_module_dir_index %>
+ <% else -%>
+        DirectoryIndex index.html
+ <% end -%>
+</IfModule>
+<% else -%>
+<IfModule dir_module>
+    DirectoryIndex index.html
+</IfModule>
+<% end -%>
+
+#
+# The following lines prevent .htaccess and .htpasswd files from being
+# viewed by Web clients.
+#
+<% if @files_ht_prevent -%>
+<Files "<%= @files_ht_prevent %>">
+ <% if @files_ht_prevent_requiere -%>
+        Requiere <%= @files_ht_prevent_requiere %>
+ <% else -%>
+    Require all denied
+ <% end -%>
+</Files>
+<% else -%>
+<Files ".ht*">
+    Require all denied
+</Files>
+<% end -%>
+
+#
+# ErrorLog: The location of the error log file.
+# If you do not specify an ErrorLog directive within a <VirtualHost>
+# container, error messages relating to that virtual host will be
+# logged here.  If you *do* define an error logfile for a <VirtualHost>
+# container, that host's errors will be logged there and not here.
+#
+<% if @error_log_file -%>
+ErrorLog "<%= @error_log_file %>"
+<% else -%>
+ErrorLog "logs/error_log"
+<% end -%>
+
+#
+# LogLevel: Control the number of messages logged to the error_log.
+# Possible values include: debug, info, notice, warn, error, crit,
+# alert, emerg.
+#
+<% if @log_level -%>
+LogLevel <%= @log_level %>
+<% else -%>
+LogLevel warn
+<% end -%>
+
+<% if @httpd_log_config_module_enable -%>
+<IfModule log_config_module>
+ <% if @httpd_log_format_combined_enable -%>
+  <% if @httpd_log_format_combined_code -%>
+   <% if @httpd_log_format_combined_tag -%>
+        LogFormat "<%= @httpd_log_format_combined_code %>" <%= @httpd_log_format_combined_tag %>
+   <% end -%>
+  <% end -%>
+ <% end -%>
+ <% if @httpd_log_format_common_enable -%>
+  <% if @httpd_log_format_common_code -%>
+   <% if @httpd_log_format_common_tag -%>
+        LogFormat "<%= @httpd_log_format_common_code %>" <%= @httpd_log_format_common_tag %>
+   <% end -%>
+  <% end -%>
+ <% end -%>
+ <% if @httpd_log_format_custom_enable -%>
+  <% if @httpd_log_format_custom_code -%>
+   <% if @httpd_log_format_custom_tag -%>
+        LogFormat "<%= @httpd_log_format_custom_code %>" <%= @httpd_log_format_custom_tag %>
+   <% end -%>
+  <% end -%>
+ <% end -%>
+ <% if @httpd_logio_module_enable -%>
+        <IfModule logio_module>
+  <% if @httpd_log_format_combinedio_enable -%>
+   <% if @httpd_log_format_combinedio_code -%>
+    <% if @httpd_log_format_combinedio_tag -%>
+                LogFormat "<%= @httpd_log_format_combinedio_code %>" <%= @httpd_log_format_combinedio_tag %>
+    <% end -%>
+   <% end -%>
+  <% end -%>
+        </IfModule>
+ <% else -%>
+        <IfModule logio_module>
+                # You need to enable mod_logio.c to use %I and %O
+                LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
+        </IfModule>
+ <% end -%>
+ <% if @httpd_custom_log_enable -%>
+  <% if @access_log_file -%>
+   <% if @httpd_log_format_custom_tag -%>
+        CustomLog "<%= @access_log_file %>" <%= @httpd_log_format_custom_tag %>
+   <% end -%>
+  <% end -%>
+ <% else -%>
+        CustomLog "logs/access_log" combined
+ <% end -%>
+</IfModule>
+<% else -%>
+<IfModule log_config_module>
+    #
+    # The following directives define some format nicknames for use with
+    # a CustomLog directive (see below).
+    #
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+    LogFormat "%h %l %u %t \"%r\" %>s %b" common
+
+    <IfModule logio_module>
+      # You need to enable mod_logio.c to use %I and %O
+      LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
+    </IfModule>
+
+    #
+    # The location and format of the access logfile (Common Logfile Format).
+    # If you do not define any access logfiles within a <VirtualHost>
+    # container, they will be logged here.  Contrariwise, if you *do*
+    # define per-<VirtualHost> access logfiles, transactions will be
+    # logged therein and *not* in this file.
+    #
+    #CustomLog "logs/access_log" common
+
+    #
+    # If you prefer a logfile with access, agent, and referer information
+    # (Combined Logfile Format) you can use the following directive.
+    #
+    CustomLog "logs/access_log" combined
+</IfModule>
+<% end -%>
+
+<% if @httpd_alias_module_enable -%>
+<IfModule alias_module>
+ <% if @script_alias_cgi_bin -%>
+        ScriptAlias /cgi-bin/ "<%= @script_alias_cgi_bin %>/"
+ <% else -%>
+        ScriptAlias /cgi-bin/ "/var/www/cgi-bin/"
+ <% end -%>
+</IfModule>
+<% else -%>
+<IfModule alias_module>
+    #
+    # Redirect: Allows you to tell clients about documents that used to
+    # exist in your server's namespace, but do not anymore. The client
+    # will make a new request for the document at its new location.
+    # Example:
+    # Redirect permanent /foo http://www.example.com/bar
+
+    #
+    # Alias: Maps web paths into filesystem paths and is used to
+    # access content that does not live under the DocumentRoot.
+    # Example:
+    # Alias /webpath /full/filesystem/path
+    #
+    # If you include a trailing / on /webpath then the server will
+    # require it to be present in the URL.  You will also likely
+    # need to provide a <Directory> section to allow access to
+    # the filesystem path.
+
+    #
+    # ScriptAlias: This controls which directories contain server scripts.
+    # ScriptAliases are essentially the same as Aliases, except that
+    # documents in the target directory are treated as applications and
+    # run by the server when requested rather than as documents sent to the
+    # client.  The same rules about trailing "/" apply to ScriptAlias
+    # directives as to Alias.
+    #
+    ScriptAlias /cgi-bin/ "/var/www/cgi-bin/"
+
+</IfModule>
+<% end -%>
+#
+# "/var/www/cgi-bin" should be changed to whatever your ScriptAliased
+# CGI directory exists, if you have that configured.
+#
+<% if @script_alias_cgi_bin -%>
+<Directory "<%= @script_alias_cgi_bin %>">
+        AllowOverride None
+        Options None
+        Require all granted
+</Directory>
+<% else -%>
+<Directory "/var/www/cgi-bin">
+    AllowOverride None
+    Options None
+    Require all granted
+</Directory>
+<% end -%>
+
+<% if @httpd_mime_module_enable -%>
+<IfModule mime_module>
+        TypesConfig /etc/mime.types
+        AddType application/x-compress .Z
+        AddType application/x-gzip .gz .tgz
+        AddType text/html .shtml
+        AddOutputFilter INCLUDES .shtml
+</IfModule>
+<% else -%>
+<IfModule mime_module>
+    #
+    # TypesConfig points to the file containing the list of mappings from
+    # filename extension to MIME-type.
+    #
+    TypesConfig /etc/mime.types
+
+    #
+    # AddType allows you to add to or override the MIME configuration
+    # file specified in TypesConfig for specific file types.
+    #
+    #AddType application/x-gzip .tgz
+    #
+    # AddEncoding allows you to have certain browsers uncompress
+    # information on the fly. Note: Not all browsers support this.
+    #
+    #AddEncoding x-compress .Z
+    #AddEncoding x-gzip .gz .tgz
+    #
+    # If the AddEncoding directives above are commented-out, then you
+    # probably should define those extensions to indicate media types:
+    #
+    AddType application/x-compress .Z
+    AddType application/x-gzip .gz .tgz
+
+    #
+    # AddHandler allows you to map certain file extensions to "handlers":
+    # actions unrelated to filetype. These can be either built into the server
+    # or added with the Action directive (see below)
+    #
+    # To use CGI scripts outside of ScriptAliased directories:
+    # (You will also need to add "ExecCGI" to the "Options" directive.)
+    #
+    #AddHandler cgi-script .cgi
+
+    # For type maps (negotiated resources):
+    #AddHandler type-map var
+
+    #
+    # Filters allow you to process content before it is sent to the client.
+    #
+    # To parse .shtml files for server-side includes (SSI):
+    # (You will also need to add "Includes" to the "Options" directive.)
+    #
+    AddType text/html .shtml
+    AddOutputFilter INCLUDES .shtml
+</IfModule>
+<% end -%>
+
+#
+# Specify a default charset for all content served; this enables
+# interpretation of all content as UTF-8 by default.  To use the
+# default browser choice (ISO-8859-1), or to allow the META tags
+# in HTML content to override this choice, comment out this
+# directive:
+#
+<% if @add_default_charset -%>
+AddDefaultCharset <%= @add_default_charset %>
+<% else -%>
+AddDefaultCharset UTF-8
+<% end -%>
+
+<% if @httpd_mime_magic_module_enable -%>
+<IfModule mime_magic_module>
+ <% if @mime_magic_file -%>
+        MIMEMagicFile conf/magic
+ <% else -%>
+        MIMEMagicFile conf/magic
+ <% end -%>
+</IfModule>
+<% else -%>
+<IfModule mime_magic_module>
+    #
+    # The mod_mime_magic module allows the server to use various hints from the
+    # contents of the file itself to determine its type.  The MIMEMagicFile
+    # directive tells the module where the hint definitions are located.
+    #
+    MIMEMagicFile conf/magic
+</IfModule>
+<% end -%>
+
+#
+# Customizable error responses come in three flavors:
+# 1) plain text 2) local redirects 3) external redirects
+#
+# Some examples:
+#ErrorDocument 500 "The server made a boo boo."
+#ErrorDocument 404 /missing.html
+#ErrorDocument 404 "/cgi-bin/missing_handler.pl"
+#ErrorDocument 402 http://www.example.com/subscription_info.html
+#
+
+#
+# EnableMMAP and EnableSendfile: On systems that support it,
+# memory-mapping or the sendfile syscall may be used to deliver
+# files.  This usually improves server performance, but must
+# be turned off when serving from networked-mounted
+# filesystems or if support for these functions is otherwise
+# broken on your system.
+# Defaults if commented: EnableMMAP On, EnableSendfile Off
+#
+#EnableMMAP off
+
+<% if @enable_send_file -%>
+EnableSendfile <%= @enable_send_file %>
+<% else -%>
+EnableSendfile on
+<% end -%>
+
+# Supplemental configuration
+#
+# Load config files in the "/etc/httpd/conf.d" directory, if any.
+IncludeOptional conf.d/*.conf
+
+<% if @include_optional_conf_d -%>
+IncludeOptional <%= @include_optional_conf_d %>/*.conf
+<% else -%>
+# IncludeOptional <%= @include_optional_conf_d %>
+<% end -%>
+
+<% if @settings_mount_point_d -%>
+IncludeOptional <%= @settings_mount_point_d %>/*.conf
+<% else -%>
+# IncludeOptional <%= @settings_mount_point_d %>
+<% end -%>
